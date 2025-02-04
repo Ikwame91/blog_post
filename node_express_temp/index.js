@@ -1,94 +1,40 @@
 const express = require("express");
 const app = express();
-const path = require("path");
 app.use(express.static("public"));
 const mongoose = require("mongoose");
-const BlogPost = require("./models/BlogPost");
 
-const multer = require("multer");
-const upload = multer();
 const bodyParser = require("body-parser");
-const { error } = require("console");
 app.use(bodyParser.urlencoded({ extended: true }));
 // Without body-parser, req.body would be undefined.
 app.use(bodyParser.json());
 const fileUpload = require("express-fileupload");
 app.use(fileUpload());
+const newPostController = require("./controllers/newPost");
+const aboutController = require("./controllers/about");
+const contactController = require("./controllers/contact");
+const homeController = require("./controllers/home");
+const storePostController = require("./controllers/storePost");
+const getPostController = require("./controllers/getPost");
+const validateMiddleWare = require("./middleware/validationMiddleware");
+const customMiddleWare = require("./middleware/customMiddleware");
 
 mongoose
   .connect("mongodb://localhost/my_database")
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 app.set("view engine", "ejs");
+app.use(customMiddleWare);
+app.post("/posts/store", validateMiddleWare, storePostController);
 
-app.post("/posts/store", async (req, res) => {
-  try {
-    // 1. Check if an image was uploaded
-    console.log(req.body);
-    console.log(req.files);
-    if (!req.files || !req.files.image) {
-      return res.status(400).send("No image uploaded");
-    }
+app.get("/", homeController);
 
-    // 2. Get the uploaded image
-    let image = req.files.image;
-    let imagepath = path.resolve(__dirname, "public/img", image.name);
+app.get("/post/:id", getPostController);
 
-    //move the image to the "public/img" folder
-    image.mv(imagepath, async (error) => {
-      if (error) {
-        console.log(error);
-        return res.status(500).send("Error uploading image");
-      }
+app.get("/posts/new", newPostController);
 
-      // Add the image path to the blog post data
-      let postData = { ...req.body, image: `img/${image.name}` };
-      //save the blog post to the database
-      await BlogPost.create(postData);
-      //redirect the homepage
-      res.redirect("/");
-    });
-  } catch (error) {
-    //handle errors
-    console.log(error);
-    res.status(500).send("Error creating posts");
-  }
-  //   The route handles the creation of a new blog post.
-  // It first checks if an image was uploaded.
-  // If an image was uploaded, it saves the image to the public/img folder.
-  // It then adds the image path to the blog post data and saves everything to the database.
-  // Finally, it redirects the user to the homepage.
-  // If anything goes wrong, it logs the error and sends an error response.
-});
-app.get("/", async (req, res) => {
-  try {
-    let query = {}; //default: no filter , fetch all posts
-    if (req.query.search) {
-      query.title = new RegExp(req.query.search, "i"); // case- insensitive search
-    }
-    const blogposts = await BlogPost.find(query);
-    res.render("index", { blogposts });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send("Error retrieving Blog Posts");
-  }
-});
+app.get("/about", aboutController);
 
-app.get("/post/:id", async (req, res) => {
-  const blogpost = await BlogPost.findById(req.params.id);
-  res.render("post", { blogpost });
-});
-
-app.get("/posts/new", (req, res) => {
-  res.render("create");
-});
-app.get("/about", (req, res) => {
-  res.render("about");
-});
-
-app.get("/contact", (req, res) => {
-  res.render("contact");
-});
+app.get("/contact", contactController);
 app.listen(4000, (req, res) => {
   console.log("app is running on port 4000s");
 });
