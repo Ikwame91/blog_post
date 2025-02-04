@@ -17,13 +17,15 @@ const storePostController = require("./controllers/storePost");
 const getPostController = require("./controllers/getPost");
 const validateMiddleWare = require("./middleware/validationMiddleware");
 const customMiddleWare = require("./middleware/customMiddleware");
-
+const newUserController = require("./controllers/newUser");
+const storeUserController = require("./controllers/storeUser");
+const loginController = require("./controllers/login");
+const loginUserController = require("./controllers/loginUser");
 mongoose
   .connect("mongodb://localhost/my_database")
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 app.set("view engine", "ejs");
-app.use(customMiddleWare);
 app.post("/posts/store", validateMiddleWare, storePostController);
 
 app.get("/", homeController);
@@ -35,8 +37,17 @@ app.get("/posts/new", newPostController);
 app.get("/about", aboutController);
 
 app.get("/contact", contactController);
+
+app.get("/auth/register", newUserController);
+
+app.get("/auth/login", loginController);
+
+app.post("/users/register", customMiddleWare, storeUserController);
+
+app.post("/users/login", loginUserController);
+
 app.listen(4000, (req, res) => {
-  console.log("app is running on port 4000s");
+  console.log("app is running on port 4000");
 });
 
 // The body-parser middleware is used to parse incoming request bodies before they reach your route handlers.
