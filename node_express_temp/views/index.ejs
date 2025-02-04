@@ -38,10 +38,8 @@
             </a>
             <p class="post-meta">
               <Posted by></Posted>
-              <a href="#"><%#= blogposts[i].username %></a>
-              on <%#=
-              blogposts[i].datePosted?blogposts[i].datePosted.toDateString():'uknown
-              date' %>
+              <a href="#"><%= blogposts[i].username %></a>
+              on <% blogposts[i].datePosted.toDateString() %>
             </p>
           </div>
           <hr />

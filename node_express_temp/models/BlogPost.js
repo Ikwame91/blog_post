@@ -4,7 +4,12 @@ const Schema = mongoose.Schema;
 const BlogPostSchema = new Schema({
   title: String,
   body: String,
-  
+  username: String,
+  image: String,
+  datePosted: {
+    type: Date,
+    default: Date.now(),
+  },
 });
 
 const BlogPost = mongoose.model("BlogPost", BlogPostSchema);
