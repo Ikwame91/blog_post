@@ -16,6 +16,9 @@ module.exports = async (req, res) => {
     if (!isMatch) {
       return res.status(400).send("Incorrect Password");
     }
+    // Store user ID in session
+    req.session.userId = user._id;
+
     console.log("Login Successful");
     res.redirect("/");
   } catch (error) {

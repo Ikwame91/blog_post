@@ -2,13 +2,15 @@ const express = require("express");
 const app = express();
 app.use(express.static("public"));
 const mongoose = require("mongoose");
-
+const expressSession = require("express-session");
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 // Without body-parser, req.body would be undefined.
+require("dotenv").config();
 app.use(bodyParser.json());
 const fileUpload = require("express-fileupload");
 app.use(fileUpload());
+
 const newPostController = require("./controllers/newPost");
 const aboutController = require("./controllers/about");
 const contactController = require("./controllers/contact");
@@ -21,12 +23,35 @@ const newUserController = require("./controllers/newUser");
 const storeUserController = require("./controllers/storeUser");
 const loginController = require("./controllers/login");
 const loginUserController = require("./controllers/loginUser");
+const authmiddleware = require("./middleware/authmiddleware");
+const logoutUserController = require("./controllers/logout");
+const redirectIfAuthenticated = require("./middleware/redirectedIfAuthenticated");
 mongoose
   .connect("mongodb://localhost/my_database")
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 app.set("view engine", "ejs");
-app.post("/posts/store", validateMiddleWare, storePostController);
+
+app.use(
+  expressSession({
+    secret: process.env.SESSION_SECRET,
+    resave: false, // prevents unnecessary session data being saved.
+    saveUninitialized: false, // ensures sessions are not saved for unauthenticated users.
+  })
+);
+const PORT = process.env.PORT || 4000;
+
+app.use("*", (req, res, next) => {
+  res.locals.loggedIn = req.session.userId;
+  next();
+});
+//using res.locals avoids potential global variable pollution
+app.post(
+  "/posts/store",
+  authmiddleware, //checks if the user is logged in
+  validateMiddleWare, // validate the request data
+  storePostController //stores the data
+);
 
 app.get("/", homeController);
 
@@ -38,17 +63,34 @@ app.get("/about", aboutController);
 
 app.get("/contact", contactController);
 
-app.get("/auth/register", newUserController);
+app.get("/auth/register", redirectIfAuthenticated, newUserController);
 
-app.get("/auth/login", loginController);
+app.get("/auth/login", redirectIfAuthenticated, loginController);
 
-app.post("/users/register", customMiddleWare, storeUserController);
+app.post(
+  "/users/register",
+  redirectIfAuthenticated,
+  customMiddleWare,
+  storeUserController
+);
 
-app.post("/users/login", loginUserController);
+app.post("/users/login", redirectIfAuthenticated, loginUserController);
 
-app.listen(4000, (req, res) => {
-  console.log("app is running on port 4000");
+app.get("/auth/logout", logoutUserController);
+
+app.use((req, res) => {
+  res.status(404).render("notfound");
 });
+
+app.listen(PORT, (req, res) => {
+  console.log(`app is running on port ${PORT}`);
+});
+
+// Sessions are how we keep the user logged into our web app by keeping their
+// information in the browser. Each time a user makes a request, information of
+// that user is sent back to the server. The server thus knows which user is
+// making that request and if they are logged in or out. The information kept on
+// the user ’ s browser is called cookies.
 
 // The body-parser middleware is used to parse incoming request bodies before they reach your route handlers.
 // app.use(bodyParser.urlencoded({ extended: true }));

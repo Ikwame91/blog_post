@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const path = require("path");
-const hashpassword = require("../utils/hashpassword");
+const {hashpassword} = require("../utils/hashpassword");
 
 module.exports = async (req, res) => {
   try {
@@ -9,8 +9,9 @@ module.exports = async (req, res) => {
       username: req.body.username,
       password: hashedPassword,
     });
+    res.redirect("/auth/register");
+
   } catch (error) {
     console.log(error);
-    res.redirect("/auth/register");
   }
 };

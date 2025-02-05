@@ -7,6 +7,8 @@ module.exports = async (req, res) => {
       query.title = new RegExp(req.query.search, "i"); // case- insensitive search
     }
     const blogposts = await BlogPost.find(query);
+    console.log(req.session);
+    
     res.render("index", { blogposts });
   } catch (error) {
     console.log(error);
