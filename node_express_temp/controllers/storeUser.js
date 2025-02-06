@@ -1,13 +1,10 @@
 const User = require("../models/User");
-const path = require("path");
-const { hashpassword } = require("../utils/hashpassword");
 
 module.exports = async (req, res) => {
   try {
-    const hashedPassword = await hashpassword(req.body.password);
     await User.create({
       username: req.body.username,
-      password: hashedPassword,
+      password: req.body.password,
     });
     res.redirect("/");
   } catch (error) {
@@ -24,8 +21,7 @@ module.exports = async (req, res) => {
     } else {
       // Some other unexpected error
       console.log(error);
+      return res.redirect("/auth/register");
     }
-
-    return res.redirect("/auth/register");
   }
 };

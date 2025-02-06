@@ -45,11 +45,7 @@ app.use("*", (req, res, next) => {
   res.locals.loggedIn = req.session.userId;
   next();
 });
-app.use((req, res, next) => {
-  res.locals.errors = req.session.validationErrors || []; // Pass errors to views
-  req.session.validationErrors = null; // Clear errors after passing them
-  next();
-});
+
 //using res.locals avoids potential global variable pollution
 app.post(
   "/posts/store",
