@@ -45,6 +45,11 @@ app.use("*", (req, res, next) => {
   res.locals.loggedIn = req.session.userId;
   next();
 });
+app.use((req, res, next) => {
+  res.locals.errors = req.session.validationErrors || []; // Pass errors to views
+  req.session.validationErrors = null; // Clear errors after passing them
+  next();
+});
 //using res.locals avoids potential global variable pollution
 app.post(
   "/posts/store",
@@ -63,18 +68,13 @@ app.get("/about", aboutController);
 
 app.get("/contact", contactController);
 
-app.get("/auth/register", redirectIfAuthenticated, newUserController);
+app.get("/auth/register", newUserController);
 
-app.get("/auth/login", redirectIfAuthenticated, loginController);
+app.get("/auth/login", loginController);
 
-app.post(
-  "/users/register",
-  redirectIfAuthenticated,
-  customMiddleWare,
-  storeUserController
-);
+app.post("/users/register", storeUserController, customMiddleWare);
 
-app.post("/users/login", redirectIfAuthenticated, loginUserController);
+app.post("/users/login", loginUserController);
 
 app.get("/auth/logout", logoutUserController);
 

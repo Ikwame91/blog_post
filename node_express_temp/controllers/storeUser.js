@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const path = require("path");
-const {hashpassword} = require("../utils/hashpassword");
+const { hashpassword } = require("../utils/hashpassword");
 
 module.exports = async (req, res) => {
   try {
@@ -9,9 +9,23 @@ module.exports = async (req, res) => {
       username: req.body.username,
       password: hashedPassword,
     });
-    res.redirect("/auth/register");
-
+    res.redirect("/");
   } catch (error) {
-    console.log(error);
+    // Check if it's a validation error from Mongoose
+    if (error.name === "ValidationError") {
+      // Extract error messages
+      const validationErrors = Object.keys(error.errors).map(
+        (key) => error.errors[key].message
+      );
+
+      // Store errors in session
+      req.session.validationErrors = validationErrors;
+      return res.redirect("/auth/register");
+    } else {
+      // Some other unexpected error
+      console.log(error);
+    }
+
+    return res.redirect("/auth/register");
   }
 };
