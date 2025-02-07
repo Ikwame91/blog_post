@@ -1,15 +1,19 @@
 const express = require("express");
 const app = express();
-app.use(express.static("public"));
 const mongoose = require("mongoose");
 const expressSession = require("express-session");
 const bodyParser = require("body-parser");
+const fileUpload = require("express-fileupload");
+const flash = require('connect-flash')
 app.use(bodyParser.urlencoded({ extended: true }));
+
 // Without body-parser, req.body would be undefined.
 require("dotenv").config();
 app.use(bodyParser.json());
-const fileUpload = require("express-fileupload");
 app.use(fileUpload());
+app.use(flash());
+app.use(express.static("public"));
+app.use(flash())
 
 const newPostController = require("./controllers/newPost");
 const aboutController = require("./controllers/about");
@@ -31,7 +35,6 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 app.set("view engine", "ejs");
-
 app.use(
   expressSession({
     secret: process.env.SESSION_SECRET,
