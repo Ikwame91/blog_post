@@ -4,7 +4,11 @@ const Schema = mongoose.Schema;
 const BlogPostSchema = new Schema({
   title: String,
   body: String,
-  username: String,
+  userid:{
+    type: mongoose.Schema.Types.ObjectId, //objectID value is supposed to be a valid mongodb 
+    ref:"User",
+    required:true
+  },
   image: String,
   datePosted: {
     type: Date,

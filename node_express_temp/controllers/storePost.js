@@ -20,9 +20,8 @@ module.exports = (req,res)=>{
             console.log(error);
             return res.status(500).send("Error uploading image");
           }
-    
           // Add the image path to the blog post data
-          let postData = { ...req.body, image: `/img/${image.name}` };
+          let postData = { ...req.body, image: `/img/${image.name}` ,userid: req.session.userId};
           //save the blog post to the database
           await BlogPost.create(postData);
           //redirect the homepage

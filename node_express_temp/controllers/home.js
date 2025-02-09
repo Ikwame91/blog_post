@@ -6,7 +6,7 @@ module.exports = async (req, res) => {
     if (req.query.search) {
       query.title = new RegExp(req.query.search, "i"); // case- insensitive search
     }
-    const blogposts = await BlogPost.find(query);
+    const blogposts = await BlogPost.find(query).populate('userid');
     console.log(req.session);
     
     res.render("index", { blogposts });

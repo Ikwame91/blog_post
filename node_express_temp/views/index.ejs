@@ -34,12 +34,12 @@
           <div class="post-preview">
             <a href="/post/<%= blogposts[i]._id%>">
               <h2 class="post-title"><%= blogposts[i].title %></h2>
-              <h3 class="post-subtitle"><%= blogposts[i].body %></h3>
+              <h3 class="post-subtitle"><%- blogposts[i].body %></h3>
             </a>
             <p class="post-meta">
               <Posted by></Posted>
-              <a href="#"><%= blogposts[i].username %></a>
-              on <% blogposts[i].datePosted.toDateString() %>
+              <a href="#"><%= blogposts[i].userid.username %></a>
+              on <%= blogposts[i].datePosted.toDateString() %>
             </p>
           </div>
           <hr />
@@ -59,3 +59,13 @@
     <%- include('layouts/footer');-%> <%- include('layouts/scripts');-%>
   </body>
 </html>
+
+
+<!-- Use <%#= %> when displaying user-generated content like usernames or comments to prevent security risks (XSS attacks).
+Use <%#- %> only when you trust the content and want to render raw HTML (e.g., formatted blog post content).
+<%#= blogposts[i].userid.username %></a>
+Safer (prevents XSS if username contains <script> or other harmful code).
+  <%#- blogposts[i].userid.username %></a>
+  Not safe (renders raw HTML if username contains HTML tags or scripts).
+
+  For usernames, stick to <%#= %> to avoid security risks! 🚀 -->
