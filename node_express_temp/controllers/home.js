@@ -4,10 +4,11 @@ module.exports = async (req, res) => {
   try {
     let query = {}; //default: no filter , fetch all posts
     if (req.query.search) {
-      query.title = new RegExp(req.query.search, "i"); // case- insensitive search
+      // Escape regex characters so input like "(" can't crash or slow the query.
+      const escaped = String(req.query.search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      query.title = new RegExp(escaped, "i"); // case-insensitive search
     }
     const blogposts = await BlogPost.find(query).populate('userid');
-    console.log(req.session);
     
     res.render("index", { blogposts });
   } catch (error) {

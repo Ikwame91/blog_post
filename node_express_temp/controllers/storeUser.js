@@ -11,7 +11,7 @@ module.exports = async (req, res) => {
     if (error.code ===11000){
       //this is a duplicate key error (index violation)
       // req.session.validationErrors = ['username already taken'];
-      req.flash  (["Validation Errors",'username already taken'])
+      req.flash("validationErrors", ["Username already taken"]);
       req.flash('data',req.body)//preserves form data           save user input
       return res.redirect('/auth/register')
     }

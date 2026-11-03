@@ -12,7 +12,7 @@ const BlogPostSchema = new Schema({
   image: String,
   datePosted: {
     type: Date,
-    default: Date.now(),
+    default: Date.now, // function, so each post gets its own time
   },
 });
 

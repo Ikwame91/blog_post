@@ -7,6 +7,6 @@ module.exports = (req, res) => {
   res.render("register", {
     errors,
     username: data.username || "",//preserve username if entered
-    password: data.password || "",//preserve passswprd if entered
+    password: "", // never send the password back to the browser
   }); // Pass errors to the view
 };

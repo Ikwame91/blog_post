@@ -12,7 +12,13 @@ module.exports = (req,res)=>{
     
         // 2. Get the uploaded image
         let image = req.files.image;
-        let imagepath = path.resolve(__dirname, "../public/img", image.name);
+        if (!/^image\//.test(image.mimetype || "")) {
+          return res.status(400).send("Only image uploads are allowed");
+        }
+        // Never trust the uploaded name: strip any path parts ("../../index.js")
+        // and add a unique prefix so uploads can't overwrite each other.
+        const safeName = `${Date.now()}-${path.basename(image.name).replace(/[^\w.-]/g, "_")}`;
+        let imagepath = path.resolve(__dirname, "../public/img", safeName);
     
         //move the image to the "public/img" folder
         image.mv(imagepath, async (error) => {
@@ -21,11 +27,15 @@ module.exports = (req,res)=>{
             return res.status(500).send("Error uploading image");
           }
           // Add the image path to the blog post data
-          let postData = { ...req.body, image: `/img/${image.name}` ,userid: req.session.userId};
+          let postData = { ...req.body, image: `/img/${safeName}` ,userid: req.session.userId};
           //save the blog post to the database
-          await BlogPost.create(postData);
-          //redirect the homepage
-          res.redirect("/");
+          try {
+            await BlogPost.create(postData);
+            res.redirect("/"); // back to the homepage
+          } catch (err) {
+            console.log(err);
+            res.status(500).send("Error saving the post");
+          }
         });
       } catch (error) {
         //handle errors

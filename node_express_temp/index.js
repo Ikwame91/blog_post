@@ -2,18 +2,16 @@ const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const expressSession = require("express-session");
+require("dotenv").config();
 const bodyParser = require("body-parser");
 const fileUpload = require("express-fileupload");
 const connectionDB = require("./config/dbconnection");
 const flash = require("connect-flash");
 app.use(bodyParser.urlencoded({ extended: true }));
 // Without body-parser, req.body would be undefined.
-require("dotenv").config();
 app.use(bodyParser.json());
 app.use(fileUpload());
-app.use(flash());
 app.use(express.static("public"));
-app.use(flash());
 
 connectionDB();
 
@@ -24,7 +22,6 @@ const homeController = require("./controllers/home");
 const storePostController = require("./controllers/storePost");
 const getPostController = require("./controllers/getPost");
 const validateMiddleWare = require("./middleware/validationMiddleware");
-const customMiddleWare = require("./middleware/customMiddleware");
 const newUserController = require("./controllers/newUser");
 const storeUserController = require("./controllers/storeUser");
 const loginController = require("./controllers/login");
@@ -41,6 +38,7 @@ app.use(
     saveUninitialized: false, // ensures sessions are not saved for unauthenticated users.
   })
 );
+app.use(flash()); // must come after the session middleware
 const PORT = process.env.PORT || 4000;
 
 app.use("*", (req, res, next) => {
@@ -66,13 +64,13 @@ app.get("/about", aboutController);
 
 app.get("/contact", contactController);
 
-app.get("/auth/register", newUserController);
+app.get("/auth/register", redirectIfAuthenticated, newUserController);
 
-app.get("/auth/login", loginController);
+app.get("/auth/login", redirectIfAuthenticated, loginController);
 
-app.post("/users/register", storeUserController, customMiddleWare);
+app.post("/users/register", redirectIfAuthenticated, storeUserController);
 
-app.post("/users/login", loginUserController);
+app.post("/users/login", redirectIfAuthenticated, loginUserController);
 
 app.get("/auth/logout", logoutUserController);
 

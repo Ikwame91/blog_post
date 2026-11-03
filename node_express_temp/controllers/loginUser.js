@@ -23,5 +23,6 @@ module.exports = async (req, res) => {
     res.redirect("/");
   } catch (error) {
     console.log(error);
+    res.status(500).send("Something went wrong while logging in");
   }
 };
